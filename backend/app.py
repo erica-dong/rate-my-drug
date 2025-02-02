@@ -20,9 +20,9 @@ def get_drugs():
     drug_reviews_druglib_com = fetch_ucirepo(id=461) 
     data = drug_reviews_druglib_com.data.features
 
-    drugs = [{'value': drug, 'label': ' '.join(word.capitalize() for word in drug.replace('-', ' ').split())} for drug in data['urlDrugName'].unique().tolist()]
+    drugs_list = [{'value': drug, 'label': ' '.join(word.capitalize() for word in drug.replace('-', ' ').split())} for drug in data['urlDrugName'].unique().tolist()]
 
-    return jsonify(drugs)
+    return jsonify(drugs_list)
 
 @app.route('/api/drugs/info', methods=['GET'])
 def get_drug_info():
@@ -48,6 +48,28 @@ def post_drug_review():
         drugs.update_one({"name": drug_name}, {"$set": {"reviews": drug['reviews']}})
 
     return jsonify(review)
+
+@app.route('/api/populate-drugs', methods=['POST'])
+def populate_drugs():
+    # prob need to modify later
+    
+    reset = request.args.get('fullReset')
+
+    drug_reviews_druglib_com = fetch_ucirepo(id=461) 
+    data = drug_reviews_druglib_com.data.features
+    drugs_list = [{'value': drug, 'label': ' '.join(word.capitalize() for word in drug.replace('-', ' ').split())} for drug in data['urlDrugName'].unique().tolist()]
+
+    drugs_add_list = []
+    for drug in drugs_list:
+        search = drugs.find_one({"name": drug['value']}, {"_id": 0})
+        if search is None:
+            drugs_add_list.append({"name": drug['value'], "reviews": []})
+        elif reset:
+            search[0].update({"name": drug['value'], "reviews": []})
+
+    if drugs_add_list:
+        drugs.insert_many(drugs_add_list)
+    return jsonify({"message": "Drugs populated successfully"})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
