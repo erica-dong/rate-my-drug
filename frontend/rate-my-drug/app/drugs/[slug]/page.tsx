@@ -6,9 +6,7 @@ export default async function Page({
     params: Promise<{ slug: string }>
   }) {
     const drug = (await params).slug
-<<<<<<< Updated upstream
     
-
     // check if drug exists in database
 
     const drugInfo = {
@@ -75,11 +73,6 @@ export default async function Page({
               </div>
             </div>
         </div>
-=======
-    return (
-    <HeaderLayout>
-        <div>{drug}</div>
->>>>>>> Stashed changes
     </HeaderLayout>
     );
 }

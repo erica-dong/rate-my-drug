@@ -15,7 +15,8 @@ def get_drugs():
     drug_reviews_druglib_com = fetch_ucirepo(id=461) 
     data = drug_reviews_druglib_com.data.features
 
-    drugs = data['urlDrugName'].unique().tolist()
+    drugs = [{'value': drug, 'label': ' '.join(word.capitalize() for word in drug.replace('-', ' ').split())} for drug in data['urlDrugName'].unique().tolist()]
+
     return jsonify(drugs)
 
 
