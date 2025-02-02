@@ -1,40 +1,51 @@
-import HeaderLayout from '@/components/header-layout'
+"use client";
 
-export default async function Page({
+import HeaderLayout from '@/components/header-layout'
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { notFound } from "next/navigation";
+
+interface DrugInfo {
+  name: string;
+  description: string;
+  reviews: Review[];
+}
+interface Review {
+  rating: number;
+  text: string;
+}
+
+export default function Page({
     params,
   }: {
-    params: Promise<{ slug: string }>
+    params: { slug: string }
   }) {
-    const drug = (await params).slug
-<<<<<<< Updated upstream
+    const drug = params.slug
+
+    const [drugInfo, setDrugInfo] = useState<DrugInfo | null>(null)
     
+    useEffect(() => {
+      if (!drugInfo) {
+        axios.get('http://127.0.0.1:5000/api/drugs/info?drug=' + drug)
+          .then(function (response) {
+            // handle success
+            console.log(response);
+            setDrugInfo(response.data)
+          })
+          .catch(function (error) {
+            // notFound();  
+            console.log(error);
+          });
+      }
+    });
 
-    // check if drug exists in database
+    const [avgRating, setAvgRating] = useState<number>(0)
 
-    const drugInfo = {
-      reviews: [
-        {
-          rating: 2,
-          review: "This drug is okay. I don't feel any different.",
-        },
-        {
-          rating: 1,
-          review: "This drug is terrible. I feel like I'm going to die.",
-        },
-        {
-          rating: 5,
-          review: "This drug is the best thing that ever happened to me.",
-        },
-      ]
-    }
-
-    // how to sort reviews? recent first (for now)
-
-    let avgRating : number = drugInfo.reviews.reduce((acc, review) => acc + review.rating, 0) / drugInfo.reviews.length
-    avgRating = Math.round(avgRating * 10) / 10
-
-
-    // TODO: change to grid
+    useEffect(() => {
+      if (drugInfo) {
+        setAvgRating(Math.round(10 * drugInfo.reviews.reduce((acc, review) => acc + review.rating, 0) / drugInfo.reviews.length) / 10);
+      }
+    }, [drugInfo]);
 
     return (
     <HeaderLayout>
@@ -46,7 +57,7 @@ export default async function Page({
                   <span className="text-xl text-gray-400 mb-auto mt-3">/5</span>
                 </div>
                 <div className="text-md mt-2 font-bold">
-                  From {drugInfo.reviews.length} rating{drugInfo.reviews.length > 1 ? 's' : ''}
+                  From {drugInfo ? drugInfo.reviews.length: "..."} rating{drugInfo ? (drugInfo.reviews.length > 1 ? 's' : '') : 's'}
                 </div>
                 <button className="bg-skyBlue hover:bg-midBlue text-white font-bold py-2 px-4 rounded mt-5">
                   Rate this drug
@@ -64,22 +75,18 @@ export default async function Page({
             <div className="mt-10 mb-10">
               <div className="text-2xl font-bold mb-5">Reviews</div>
               <div className="flex flex-col gap-10">
-                {drugInfo.reviews.map((review, index) => (
+                { !drugInfo ? "" :
+                drugInfo.reviews.map((review, index) => (
                   <div key={index} className="flex gap-10 border-solid border border-black rounded-xl p-6 pl-8 pr-8">
                     <span className="text-2xl font-extrabold text-black">{review.rating}{Math.round(review.rating) == review.rating ? ".0" : ''}</span>
                     <div className="text-md mt-2">
-                      {review.review}
+                      {review.text}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
         </div>
-=======
-    return (
-    <HeaderLayout>
-        <div>{drug}</div>
->>>>>>> Stashed changes
     </HeaderLayout>
     );
 }
