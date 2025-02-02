@@ -3,7 +3,6 @@
 import HeaderLayout from '@/components/header-layout'
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { notFound } from "next/navigation";
 
 interface DrugInfo {
   name: string;
@@ -23,18 +22,18 @@ export default function Page({
     const drug = params.slug
 
     const [drugInfo, setDrugInfo] = useState<DrugInfo | null>(null)
+    const [drugExists, setDrugExists] = useState<boolean>(true)
     
     useEffect(() => {
       if (!drugInfo) {
         axios.get('http://127.0.0.1:5000/api/drugs/info?drug=' + drug)
           .then(function (response) {
-            // handle success
             console.log(response);
             setDrugInfo(response.data)
           })
           .catch(function (error) {
-            // notFound();  
             console.log(error);
+            setDrugExists(false)
           });
       }
     });
@@ -48,6 +47,11 @@ export default function Page({
     }, [drugInfo]);
 
     return (
+    !drugExists ? <HeaderLayout>
+      <div className='flex flex-col items-center pt-6 pb-10'>
+        <div className='text-4xl font-bold'>404: Drug not found</div>
+      </div>
+    </HeaderLayout> :
     <HeaderLayout>
         <div className='flex flex-col items-center pt-6 pb-10'>
             <div className='flex justify-center gap-10'>
